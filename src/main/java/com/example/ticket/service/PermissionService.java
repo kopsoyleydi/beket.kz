@@ -18,7 +18,6 @@ public class PermissionService {
 
 	private final PermissionMapper mapper;
 
-
 	public List<PermissionDTO> getAllPermissions(){
 		return mapper.toDtoList(repo.getAllPermissions());
 	}

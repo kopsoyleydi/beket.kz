@@ -11,12 +11,10 @@ public interface RoadsRepository extends JpaRepository<ListOfRoads,Long> {
 	ListOfRoads findAllById(Long id);
 
 	@Query("SELECT r FROM ListOfRoads r " +
-			"JOIN r.departure departure_city " +
-			"JOIN r.arrival arrival_city " +
-			"WHERE departure_city.name = :departureCity " +
-			"AND arrival_city.name = :arrivalCity " +
+			"WHERE r.departure.name = :departureCity " +
+			"AND r.arrival.name = :arrivalCity " +
 			"AND r.departure_date = :departureDate")
-	List<ListOfRoads> getRoadByFilterParameter(@Param("departureCity")String departureCity,
-	                                           @Param("arrivalCity")String arrivalCity,
-	                                           @Param("departureDate")String departureDate);
+	List<ListOfRoads> getRoadByFilterParameter(@Param("departureCity") String departureCity,
+	                                           @Param("arrivalCity") String arrivalCity,
+	                                           @Param("departureDate") String departureDate);
 }

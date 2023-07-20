@@ -14,8 +14,6 @@ public class Review extends BaseModel {
 
 	private String comment;
 
-	@ManyToOne
-	private Event event;
 
 	@ManyToOne
 	private User user;

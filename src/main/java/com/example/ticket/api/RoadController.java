@@ -23,9 +23,14 @@ public class RoadController {
 		return roadService.addRoad(roadSample);
 	}
 
-	@PreAuthorize("isAuthenticated()")
 	@GetMapping(value = "/getRoadByFilter")
-	public List<RoadsDTO> getRoadByFilter(@RequestBody FilterSample filterSample){
+	public List<RoadsDTO> getRoadByFilter(@RequestParam(name = "departure") String departure,
+	                                      @RequestParam(name = "arrival")String arrival,
+	                                      @RequestParam(name = "date") String date){
+		FilterSample filterSample = new FilterSample();
+		filterSample.setDepartureCityName(departure);
+		filterSample.setArrivalCityName(arrival);
+		filterSample.setDateRoad(date);
 	return roadService.getRoadsFyFilter(filterSample);
 	}
 }

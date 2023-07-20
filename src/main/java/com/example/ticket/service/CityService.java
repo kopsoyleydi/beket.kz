@@ -11,6 +11,8 @@ import com.example.ticket.repository.StationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class CityService {
@@ -29,5 +31,9 @@ public class CityService {
 		cities.setStationId(station);
 		cities.setShortName(citySample.getShortName());
 		return cityMapper.toDto(cityRepository.save(cities));
+	}
+
+	public List<CityDTO> getAllCities(){
+		return cityMapper.toDtoList(cityRepository.findAll());
 	}
 }
