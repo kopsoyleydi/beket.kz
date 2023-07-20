@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout.html"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<div layout:fragment="content">
+    <div class="row">
+        <input type="hidden" th:value="${#authentication.principal.id}" id="user_id">
+        <div class="card" style="width: 18rem;">
+            <img th:src="${event.pictureLink}" class="card-img-top" alt="...">
+            <div class="card-body">
+                <h5 class="card-title" th:text="${event.eventName}"></h5>
+                <p class="card-text" th:text="${event.event_date}"></p>
+                <a href="#" class="btn btn-secondary" th:text="${event.price + ' t'}"></a>
+            </div>
+        </div>
+        <div class="col-7 ms-5" sec:authorize="hasAnyRole('ROLE_USER')">
+            <div class="row mt-3">
+                <div class="col-6" id="alert">
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-6">
+                    <label>Email : </label>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-6">
+                    <input id="username" type="email" class="form-control">
+                    <input id="eventId" type="hidden" th:value="${event.id}">
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-6">
+                    <label>Select seat : </label>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-6">
+                    <select id="place" class="form-select">
+                        <option th:each="p : ${places}" th:text="${p}" th:value="${p}">
+
+                        </option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-6">
+                    <input readonly type="text" id="event_price"
+                           th:value="${'Стоимость одного билета '+ event.price + ' t'}"
+                           th:class="form-control">
+                    <input type="hidden" id="price" th:value="${event.price}">
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-6" sec:authorize="isAuthenticated()">
+                    <button class="btn btn-success" onclick="addTicket()">Buy Ticket</button>
+                </div>
+                <div class="col-6" sec:authorize="isAnonymous()">
+                    <span>Вы должны зарегистрироваться или войти для покупки билета</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div>
+            <div class="col-12 ms-2 mt-3">
+                <div class="container mt-5">
+                    <div class="row  d-flex justify-content-center">
+                        <div class="col-md-8">
+                            <div class="headings d-flex justify-content-between align-items-center mb-3">
+                                <h5>Reviews</h5>
+                                <div class="buttons">
+                            <span class="badge bg-white d-flex flex-row align-items-center">
+                                <span class="text-primary">All review</span>
+                            </span>
+                                </div>
+                            </div>
+                            <div class="col-12 mx-auto p-3 mt-2" style="background-color: white; display: flex">
+                                <div class="col-12">
+                                    <div class="col-12 mx-auto p-3 mt-2" style="background-color: white; display: flex">
+                                        <div class="col-12">
+                                            <textarea class="form-control" id="comment"
+                                                      placeholder="Write a review"></textarea>
+                                            <button class="btn btn-primary mt-2 btn-sm ms-1" onclick="addComment()">Add
+                                                your review
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card p-2 mt-3" id="allComments">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            eventId = document.getElementById("eventId");
+
+            function addTicket() {
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("POST", "/addTicket", true);
+                httpRequest.setRequestHeader("Content-Type", "application/json");
+
+                let username = document.getElementById("username");
+                let place = document.getElementById("place");
+                let price = document.getElementById("price");
+
+                let alert = document.getElementById("alert");
+
+                httpRequest.onreadystatechange = function () {
+                    if (httpRequest.responseText.length <= 0) {
+                        alert.innerHTML = " <div class=\"alert alert-danger\" role=\"alert\">\n" +
+                            "            У вас не достаточно средств, или что-то пошло не так!!!\n" +
+                            "          </div>";
+                    } else if (httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200) {
+                        username.value = "";
+                        place.value = "";
+                        alert.innerHTML = " <div class=\"alert alert-success\" role=\"alert\">\n" +
+                            "            Purchase completed successfully\n" +
+                            "          </div>";
+                    }
+                };
+                let body = {
+                    'username': username.value,
+                    'id': eventId.value,
+                    'place': place.value,
+                    'price': price.value
+                };
+                body = JSON.stringify(body);
+                httpRequest.send(body);
+            }
+
+            loadComments();
+
+            function loadComments() {
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET", "http://localhost:8000/getCommentByEventId/" + eventId.value, true);
+                httpRequest.onreadystatechange = function () {
+                    if (httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200) {
+
+                        let courseList = JSON.parse(httpRequest.responseText);
+
+                        let tableContent = "";
+                        for (let i = 0; i < courseList.length; i++) {
+                            tableContent += "<div class='mb-3'>\n" +
+                                "<div class=\"d-flex justify-content-between align-items-center mb-2\">\n" +
+                                "     <div class=\"user d-flex flex-row align-items-center\">\n" +
+                                "          <img class='me-3' src=\"" + courseList[i].user.imgLink + "\" width=\"30\"\n" +
+                                "               class=\"user-img rounded-circle mr-2\">\n" +
+                                "                     <span><small class=\"font-weight-bold text-primary\">" +
+                                courseList[i].user.fullName + "</small>\n" +
+                                "                     <small class=\"font-weight-bold ms-2\">" + courseList[i].comment
+                                + "</small></span>\n" +
+                                "     </div>\n" +
+                                "     <small></small>\n" +
+                                "</div>\n" +
+                                "<div class=\"action d-flex justify-content-between mt-2 align-items-center mb-2\">\n" +
+                                "     <div class=\"icons align-items-center mt-2\">\n" +
+                                "          <button type=\"button\" class=\"btn btn-danger btn-sm\"" +
+                                " data-bs-toggle=\"modal\"\n" +
+                                "                  data-bs-target=\"#delete\">\n" +
+                                "                       delete\n" +
+                                "          </button>\n" +
+                                "      </div>\n" +
+                                "</div>\n" +
+                                "</div>";
+                        }
+                        document.getElementById("allComments").innerHTML = tableContent;
+                    }
+                }
+                httpRequest.send();
+            }
+
+            function addComment() {
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("POST", "/addReview", true);
+                httpRequest.setRequestHeader("Content-Type", "application/json");
+                let userId = document.getElementById("user_id");
+                let eventId = document.getElementById("eventId");
+                let comment = document.getElementById("comment");
+                httpRequest.onreadystatechange = function () {
+                    if (httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200) {
+                        window.location.reload();
+                    }
+                };
+                let body = {
+                    'id': null,
+                    'comment': comment.value,
+                    'user_id': userId.value,
+                    'event_id': eventId.value
+                };
+                body = JSON.stringify(body);
+                httpRequest.send(body);
+            }
+        </script>
+    </div>
+
+</div>
+</html>
