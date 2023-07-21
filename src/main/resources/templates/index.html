@@ -4,7 +4,7 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <div layout:fragment="content">
     <main class="text-center">
-        <div class="col-6">
+        <div class="col-6" id="searchPanel">
             <div class="row">
                 <div class="col-4">
                     <select id="departure" placeholder="Дата отправки" class="form-select">
@@ -22,11 +22,34 @@
             </div>
             <div class="col-3">
                 <div class="row">
-                    <button type="button" class="btn btn-success btn-sm" onclick="">Search</button>
+                    <button type="button" class="btn btn-success btn-sm" onclick="doFilter()">Search</button>
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-6 mx-auto">
+                <table class="table">
+                    <thead id="preList">
+                    </thead>
+                    <tbody id="list">
+                    </tbody>
+                </table>
+            </div>
+        </div>
         <script type="text/javascript">
+
+            let deperature;
+            let arrival;
+            let deperatureDate;
+
+            let panel = document.getElementById("searchPanel");
+            function doFilter(){
+                deperature = document.getElementById("departure");
+                arrival = document.getElementById("arrival");
+                deperatureDate = document.getElementById("departure_date");
+                panel.innerHTML = "";
+                loadRoads();
+            }
 
             loadCities();
 
@@ -38,10 +61,39 @@
                         let cityList = JSON.parse(httpRequest.responseText);
                         let content = "";
                         for (let i = 0; i < cityList.length; i++) {
-                            content += "<option id='"+cityList[i].id+"'>"+cityList[i].name+"</option>"
+                            content += "<option value='"+cityList[i].name+"'>"+cityList[i].name+"</option>"
                         }
                         document.getElementById("departure").innerHTML = content;
                         document.getElementById("arrival").innerHTML = content;
+                    }
+                }
+                httpRequest.send();
+            }
+            function loadRoads(){
+                const httpRequest = new XMLHttpRequest();
+                httpRequest.open("GET", "http://localhost:8888/roads/getRoadByFilter?departure="+deperature.value+"&arrival="+arrival.value+"&date="+deperatureDate.value+"", true);
+                httpRequest.onreadystatechange = function () {
+                    if (httpRequest.readyState == XMLHttpRequest.DONE && httpRequest.status == 200) {
+                        let roadsList = JSON.parse(httpRequest.responseText);
+                        let content = "";
+                        content += "";
+                        let preContent = "";
+                        preContent += "<tr>\n" +
+                            "                        <th scope=\"col\">Departure</th>\n" +
+                            "                        <th scope=\"col\">Arrival</th>\n" +
+                            "                        <th scope=\"col\">Departure date</th>\n" +
+                            "                        <th scope=\"col\">Departure Station</th>\n" +
+                            "                    </tr>";
+                        for (let i = 0; i < roadsList.length; i++) {
+                            content += "<tr>";
+                            content += "<th>"+roadsList[i].departure.name+"</th>";
+                            content += "<th>"+roadsList[i].arrival.name+"</th>";
+                            content += "<th>"+roadsList[i].departure.stationId.stationName+"</th>";
+                            content += "<th>"+roadsList[i].departure_date+"</th>";
+                            content += "</tr>"
+                        }
+                        document.getElementById("preList").innerHTML = preContent;
+                        document.getElementById("list").innerHTML = content;
                     }
                 }
                 httpRequest.send();

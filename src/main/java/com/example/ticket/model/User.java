@@ -21,7 +21,7 @@ public class User extends BaseModel implements UserDetails {
 	@Column(name = "password")
 	private String password;
 
-	@Column(name = "name")
+	@Column(name = "username")
 	private String name;
 
 	@Column(name = "img_link")

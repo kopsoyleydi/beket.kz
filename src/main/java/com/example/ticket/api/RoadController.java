@@ -23,6 +23,7 @@ public class RoadController {
 		return roadService.addRoad(roadSample);
 	}
 
+
 	@GetMapping(value = "/getRoadByFilter")
 	public List<RoadsDTO> getRoadByFilter(@RequestParam(name = "departure") String departure,
 	                                      @RequestParam(name = "arrival")String arrival,

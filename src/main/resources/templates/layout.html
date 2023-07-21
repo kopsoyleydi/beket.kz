@@ -30,7 +30,7 @@
                 <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                        aria-expanded="false">
-                        <span th:text="${#authentication.principal.name}"></span>
+                        <span th:text="${#authentication.principal.username}"></span>
                     </a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" th:href="@{'/profile'}">Profile</a></li>
